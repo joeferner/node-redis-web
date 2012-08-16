@@ -1,10 +1,20 @@
+var redisSubscribeCommands = [ 'psubscribe', 'punsubscribe', 'subscribe', 'unsubscribe' ];
+
 redis = function () {
 
 };
+redis.socketCallbacks = {};
 
 var RedisClient = function () {
   var self = this;
-  this.socket = io.connect('/');
+  if (!redis.socket) {
+    redis.socket = io.connect('/');
+    redis.socket.on('redis-web', function (data) {
+      if (data.id && redis.socketCallbacks[data.id]) {
+        redis.socketCallbacks[data.id].apply(null, data.args);
+      }
+    });
+  }
   redisCommands.forEach(function (cmd) {
     var runFn = runCommand.bind(self, cmd);
     self[cmd] = function () {
@@ -12,32 +22,43 @@ var RedisClient = function () {
     };
   });
 
+  this.on = function (evt, callback) {
+    callback = callback || function () {};
+    sendSocketIoCmd('on', [evt], callback);
+  };
+
   function runCommand(cmd, args) {
-    var callback = args[args.length - 1];
-    if (typeof(callback) === 'function') {
+    cmd = cmd.toLowerCase();
+    var callback;
+    if (typeof(args[args.length - 1]) === 'function') {
+      callback = args[args.length - 1];
       args = args.slice(0, args.length - 1);
     } else {
       callback = function () {};
     }
 
-    var data = {
-      cmd: cmd,
-      args: args
-    };
-    xmlhttpRequest('/redis-web-post', JSON.stringify(data), function (err, responseText) {
-      if (err) {
-        return callback(err);
-      }
-      try {
-        var responseJson = JSON.parse(responseText);
-        if (responseJson.err) {
+    if (redisSubscribeCommands.indexOf(cmd) >= 0) {
+      sendSocketIoCmd(cmd, args, callback);
+    } else {
+      var data = {
+        cmd: cmd,
+        args: args
+      };
+      xmlhttpRequest('/redis-web-post', JSON.stringify(data), function (err, responseText) {
+        if (err) {
           return callback(err);
         }
-        return callback(null, responseJson.results);
-      } catch (ex) {
-        return callback(ex);
-      }
-    });
+        try {
+          var responseJson = JSON.parse(responseText);
+          if (responseJson.err) {
+            return callback(err);
+          }
+          return callback(null, responseJson.results);
+        } catch (ex) {
+          return callback(ex);
+        }
+      });
+    }
   }
 
   function xmlhttpRequest(url, body, callback) {
@@ -66,10 +87,19 @@ var RedisClient = function () {
     };
     xmlHttpReq.send(body);
   }
+
+  function sendSocketIoCmd(cmd, args, callback) {
+    var id = Date.now() + '-' + Math.random();
+    redis.socketCallbacks[id] = callback;
+    redis.socket.emit('redis-web', {
+      cmd: cmd,
+      args: args,
+      id: id
+    });
+  }
 };
 
 redis.createClient = function () {
-  var result = new RedisClient();
-  return result;
+  return new RedisClient();
 };
 

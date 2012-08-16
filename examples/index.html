@@ -11,13 +11,22 @@
 <h3>Results</h3>
 <pre id='results'></pre>
 
+<h3>Messages</h3>
+<pre id='messages'></pre>
+
 <script>
-  var client = redis.createClient();
+  var clientCmd = redis.createClient();
+  var clientPubSub = redis.createClient();
+  clientPubSub.psubscribe('*');
+  clientPubSub.on('pmessage', function (pattern, channel, message) {
+    messages.innerText += 'Message: ' + channel + ': ' + message + '\n';
+  });
+
   function runCommand() {
     var cmdStr = document.getElementById('cmd').value;
     var results = document.getElementById('results');
     var cmdParts = cmdStr.split(' ');
-    var cmd = cmdParts[0].toLowerCase();
+    var cmd = cmdParts[0];
     var args = cmdParts.slice(1);
     console.log(cmdStr, cmdParts);
     args.push(function (err, data) {
@@ -32,8 +41,8 @@
         results.innerText = '(Empty)';
       }
     });
-    if (client[cmd]) {
-      client[cmd].apply(client, args);
+    if (clientCmd[cmd]) {
+      clientCmd[cmd].apply(clientCmd, args);
     } else {
       results.innerText = "ERROR: Invalid Command";
     }

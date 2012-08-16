@@ -47,15 +47,29 @@ module.exports = function () {
     return next();
   };
 
+  middleWare.redisClientArgs = arguments;
+
   middleWare.setSocketIo = function (sio) {
     middleWare.sio = sio;
     middleWare.sio.on('connection', function (socket) {
-      middleWare.socket = socket;
+      socket.pubsubClient = redis.createClient.apply(redis, middleWare.redisClientArgs);
+      socket.on('redis-web', function (data) {
+        data.args.push(function () {
+          var d = {
+            id: data.id,
+            args: Array.prototype.slice.call(arguments)
+          };
+          socket.emit('redis-web', d);
+        });
+        socket.pubsubClient[data.cmd].apply(socket.pubsubClient, data.args);
+      });
+      socket.on('disconnect', function () {
+        socket.pubsubClient.quit();
+      })
     });
   };
 
-  middleWare.cmdClient = redis.createClient.apply(redis, arguments);
-  middleWare.pubsubClient = redis.createClient.apply(redis, arguments);
+  middleWare.cmdClient = redis.createClient.apply(redis, middleWare.redisClientArgs);
 
   return middleWare;
 };
