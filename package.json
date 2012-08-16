@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Connect middleware to proxy redis commands and pub/sub to a browser.",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": "",
   "keywords": [
     "redis",
@@ -16,6 +15,10 @@
   "author": "Joe Ferner",
   "license": "MIT",
   "dependencies": {
-    "redis": "~0.7.2"
+    "redis": "~0.7.2",
+    "socket.io": "~0.9.10"
+  },
+  "devDependencies": {
+    "connect": "~2.4.3"
   }
 }

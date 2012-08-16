@@ -1,0 +1,44 @@
+<html>
+<head>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/redis-web.js" type="text/javascript"></script>
+</head>
+<body>
+
+<input type='text' id='cmd' size="40" value='KEYS *'>
+<input type='button' value='Run' onclick="runCommand()">
+
+<h3>Results</h3>
+<pre id='results'></pre>
+
+<script>
+  var client = redis.createClient();
+  function runCommand() {
+    var cmdStr = document.getElementById('cmd').value;
+    var results = document.getElementById('results');
+    var cmdParts = cmdStr.split(' ');
+    var cmd = cmdParts[0].toLowerCase();
+    var args = cmdParts.slice(1);
+    console.log(cmdStr, cmdParts);
+    args.push(function (err, data) {
+      console.log('results', arguments);
+      if (err) {
+        results.innerText = "ERROR: " + err.toString();
+        return;
+      }
+      if (data) {
+        results.innerText = JSON.stringify(data, null, '  ');
+      } else {
+        results.innerText = '(Empty)';
+      }
+    });
+    if (client[cmd]) {
+      client[cmd].apply(client, args);
+    } else {
+      results.innerText = "ERROR: Invalid Command";
+    }
+  }
+</script>
+
+</body>
+</html>
