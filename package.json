@@ -1,10 +1,9 @@
 {
-  "name": "redis-connect",
+  "name": "redis-web",
   "version": "0.0.1",
   "description": "Connect middleware to proxy redis commands and pub/sub to a browser.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "",
   "keywords": [
@@ -15,5 +14,8 @@
     "socket.io"
   ],
   "author": "Joe Ferner",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "redis": "~0.7.2"
+  }
 }
