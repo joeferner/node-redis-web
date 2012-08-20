@@ -34,7 +34,11 @@ var RedisClient = function () {
       callback = args[args.length - 1];
       args = args.slice(0, args.length - 1);
     } else {
-      callback = function () {};
+      callback = function (err) {
+        if (err) {
+          console.error('Could not run command', err);
+        }
+      };
     }
 
     if (redisSubscribeCommands.indexOf(cmd) >= 0) {
