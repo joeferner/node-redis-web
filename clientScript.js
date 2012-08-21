@@ -32,8 +32,8 @@ var RedisClient = function () {
     sendSocketIoCmd('once', [evt], callback);
   };
 
-  this.removeListener = function (evt, callback) {
-    callback = callback || function () {};
+  this.removeListener = function (evt) {
+    callback = function () {};
     sendSocketIoCmd('removeListener', [evt], callback);
   };
 
