@@ -27,6 +27,21 @@ var RedisClient = function () {
     sendSocketIoCmd('on', [evt], callback);
   };
 
+  this.once = function (evt, callback) {
+    callback = callback || function () {};
+    sendSocketIoCmd('once', [evt], callback);
+  };
+
+  this.removeListener = function (evt, callback) {
+    callback = callback || function () {};
+    sendSocketIoCmd('removeListener', [evt], callback);
+  };
+
+  this.removeAllListeners = function (evt) {
+    callback = callback || function () {};
+    sendSocketIoCmd('removeAllListeners', [evt], callback);
+  };
+
   function runCommand(cmd, args) {
     cmd = cmd.toLowerCase();
     var callback;
