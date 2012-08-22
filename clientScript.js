@@ -62,15 +62,16 @@ var RedisClient = function () {
         if (err) {
           return callback(err);
         }
+        var responseJson;
         try {
-          var responseJson = JSON.parse(responseText);
-          if (responseJson.err) {
-            return callback(err);
-          }
-          return callback(null, responseJson.results);
+          responseJson = JSON.parse(responseText);
         } catch (ex) {
           return callback(ex);
         }
+        if (responseJson.err) {
+          return callback(err);
+        }
+        return callback(null, responseJson.results);
       });
     }
   }
