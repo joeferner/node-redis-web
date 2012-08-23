@@ -1,6 +1,6 @@
 {
   "name": "redis-web",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Connect middleware to proxy redis commands and pub/sub to a browser.",
   "main": "index.js",
   "scripts": {},
